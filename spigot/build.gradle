@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group 'dev.dtrix'
+version '1.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {url "https://hub.spigotmc.org/nexus/content/repositories/snapshots"}
+    maven {url = "https://oss.sonatype.org/content/repositories/snapshots/"}
+}
+
+dependencies {
+    compileOnly "org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT"
+}
+
+task setupDevServer(type: Copy) {
+    from 'config/serverfiles'
+    into 'testserver'
+}
+
+task cleanPlugins() {
+    delete "testserver/plugins"
+}
+
+task copyPluginToTestserver(dependsOn: ['build'], type: Copy) {
+    from "${buildDir}/libs"
+    into "testserver/plugins"
+}
+
+task startDevServer(dependsOn: ['cleanPlugins', 'copyPluginToTestserver', 'setupDevServer'], type: JavaExec) {
+    classpath configurations.compile
+    main = "org.bukkit.craftbukkit.Main"
+    workingDir = "testserver/"
+    standardInput = System.in
+}
